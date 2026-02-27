@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { Sidebar, Player } from '@/components'
-import { useUIStore } from '@/store'
+import { useUIStore } from '@/stores'
 import { useMediaQuery } from '@/hooks'
 import { cn } from '@/utils/helpers'
 

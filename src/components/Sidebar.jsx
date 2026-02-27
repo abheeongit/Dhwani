@@ -1,116 +1,168 @@
-import { NavLink } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/utils/helpers'
-import { useUIStore } from '@/store'
-import { useMediaQuery } from '@/hooks'
+import { NavLink, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
-  HiHome,
-  HiMagnifyingGlass,
-  HiMusicalNote,
-  HiChartBar,
-  HiCog6Tooth,
-  HiSparkles,
-  HiUserGroup,
-} from 'react-icons/hi2'
+  RiHomeFill,
+  RiSearchLine,
+  RiPlayListFill,
+  RiMusic2Fill,
+  RiUserHeartLine,
+  RiBarChartFill,
+  RiSettings4Line,
+  RiUserLine,
+  RiLogoutBoxLine,
+  RiAddLine,
+  RiHeadphoneLine,
+} from 'react-icons/ri';
+import { useUserStore } from '../stores/userStore';
 
 const navItems = [
-  { to: '/home', label: 'Home', icon: HiHome },
-  { to: '/search', label: 'Search', icon: HiMagnifyingGlass },
-  { to: '/library', label: 'Library', icon: HiMusicalNote },
-  { to: '/mood', label: 'Mood AI', icon: HiSparkles },
-  { to: '/friends', label: 'Friends', icon: HiUserGroup },
-  { to: '/analytics', label: 'Analytics', icon: HiChartBar },
-  { to: '/settings', label: 'Settings', icon: HiCog6Tooth },
-]
+  { path: '/home', icon: RiHomeFill, label: 'Home' },
+  { path: '/search', icon: RiSearchLine, label: 'Search' },
+  { path: '/library', icon: RiPlayListFill, label: 'Library' },
+];
+
+const discoverItems = [
+  { path: '/mood', icon: RiHeadphoneLine, label: 'Mood Mix' },
+  { path: '/artists', icon: RiMusic2Fill, label: 'Artists' },
+  { path: '/friends', icon: RiUserHeartLine, label: 'Friends' },
+];
+
+const userItems = [
+  { path: '/analytics', icon: RiBarChartFill, label: 'Stats' },
+  { path: '/settings', icon: RiSettings4Line, label: 'Settings' },
+];
 
 export default function Sidebar() {
-  const collapsed = useUIStore((s) => s.sidebarCollapsed)
-  const isMobile = useMediaQuery(900)
-  const isCollapsed = collapsed || isMobile
+  const { user, logout } = useUserStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
-    <aside
-      className={cn(
-        'fixed top-0 left-0 bottom-0 z-40 flex flex-col justify-between',
-        'bg-gradient-to-b from-[#14122280] to-[#0e0d1a80] backdrop-blur-md',
-        'border-r border-white/[0.04] transition-all duration-300',
-        isCollapsed ? 'w-[72px]' : 'w-[240px]',
-      )}
-    >
+    <aside className="sidebar flex flex-col h-screen">
       {/* Logo */}
-      <div className="flex flex-col">
-        <div className={cn('flex items-center gap-3 px-5 pt-7 pb-8', isCollapsed && 'justify-center px-0')}>
-          <div className="w-8 h-8 rounded-lg gradient-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
-            D
-          </div>
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -8 }}
-                className="gradient-text text-xl font-bold tracking-wide select-none"
-              >
-                Dhwani
-              </motion.span>
-            )}
-          </AnimatePresence>
+      <div className="flex items-center gap-3 mb-8 px-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-dhwani-accent to-dhwani-accent2 flex items-center justify-center">
+          <RiMusic2Fill className="text-white text-xl" />
         </div>
+        <span className="text-xl font-bold gradient-text">Dhwani</span>
+      </div>
 
-        {/* Nav */}
-        <nav className="flex flex-col gap-1 px-3">
-          {navItems.map(({ to, label, icon: Icon }) => (
+      {/* Main Navigation */}
+      <nav className="flex-1 space-y-1">
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-dhwani-muted uppercase tracking-wider mb-3 px-3">
+            Menu
+          </p>
+          {navItems.map((item) => (
             <NavLink
-              key={to}
-              to={to}
+              key={item.path}
+              to={item.path}
               className={({ isActive }) =>
-                cn(
-                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                  'hover:bg-white/[0.04] hover:translate-x-0.5',
-                  isActive
-                    ? 'bg-white/[0.06] text-white shadow-[0_0_20px_rgba(138,108,255,0.08)]'
-                    : 'text-dhwani-muted',
-                  isCollapsed && 'justify-center px-0',
-                )
+                `nav-link ${isActive ? 'active' : ''}`
               }
             >
-              <Icon className="w-5 h-5 shrink-0 transition-colors group-hover:text-dhwani-accent" />
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="whitespace-nowrap overflow-hidden"
-                  >
-                    {label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
+              <item.icon className="text-lg" />
+              <span>{item.label}</span>
             </NavLink>
           ))}
-        </nav>
-      </div>
-
-      {/* Profile */}
-      <div className={cn('px-4 pb-6', isCollapsed && 'px-2')}>
-        <div
-          className={cn(
-            'flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-white/[0.04] cursor-pointer',
-            isCollapsed && 'justify-center',
-          )}
-        >
-          <div className="w-9 h-9 rounded-full gradient-accent shrink-0 shadow-lg" />
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="overflow-hidden">
-                <p className="text-sm font-semibold text-white truncate">Alex Morgan</p>
-                <p className="text-xs text-dhwani-muted">Premium</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
-      </div>
+
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-dhwani-muted uppercase tracking-wider mb-3 px-3">
+            Discover
+          </p>
+          {discoverItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `nav-link ${isActive ? 'active' : ''}`
+              }
+            >
+              <item.icon className="text-lg" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        {/* Playlists Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3 px-3">
+            <p className="text-xs font-semibold text-dhwani-muted uppercase tracking-wider">
+              Playlists
+            </p>
+            <button className="w-6 h-6 rounded-full bg-dhwani-surface-light flex items-center justify-center hover:bg-dhwani-accent transition-colors">
+              <RiAddLine className="text-sm" />
+            </button>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            <NavLink to="/library" className="nav-link text-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-dhwani-accent3" />
+              <span>Liked Songs</span>
+            </NavLink>
+            <NavLink to="/library" className="nav-link text-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-dhwani-accent2" />
+              <span>Party Mix</span>
+            </NavLink>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold text-dhwani-muted uppercase tracking-wider mb-3 px-3">
+            Account
+          </p>
+          {userItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `nav-link ${isActive ? 'active' : ''}`
+              }
+            >
+              <item.icon className="text-lg" />
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+      </nav>
+
+      {/* User Profile */}
+      {user ? (
+        <div className="mt-auto pt-4 border-t border-dhwani-border">
+          <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-dhwani-surface-light transition-colors cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-dhwani-accent to-dhwani-accent3 flex items-center justify-center overflow-hidden">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <RiUserLine className="text-white" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm truncate">{user.name}</p>
+              <p className="text-xs text-dhwani-muted">{user.plan === 'PREMIUM' ? 'Premium' : 'Free'}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-lg hover:bg-dhwani-surface-elevated transition-colors text-dhwani-muted hover:text-dhwani-error"
+            >
+              <RiLogoutBoxLine />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/login')}
+          className="btn-primary w-full mt-4"
+        >
+          Sign In
+        </motion.button>
+      )}
     </aside>
-  )
+  );
 }

@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER & AUTH
+// ─────────────────────────────────────────────────────────────
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  avatar       String?
+  bio          String?
+  plan         Plan     @default(FREE)
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  playlists       Playlist[]
+  likedTracks     LikedTrack[]
+  likedPlaylists  LikedPlaylist[]
+  followedArtists FollowedArtist[]
+  listeningHistory ListeningHistory[]
+  friends         Friendship[] @relation("UserFriends")
+  friendOf        Friendship[] @relation("FriendOf")
+  friendRequests  FriendRequest[] @relation("RequestReceiver")
+  sentRequests    FriendRequest[] @relation("RequestSender")
+  sessions        Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+enum Plan {
+  FREE
+  PREMIUM
+}
+
+enum Role {
+  USER
+  ARTIST
+  ADMIN
+}
+
+// ─────────────────────────────────────────────────────────────
+// MUSIC CONTENT
+// ─────────────────────────────────────────────────────────────
+model Artist {
+  id          String   @id @default(cuid())
+  name        String
+  bio         String?
+  avatar      String?
+  coverImage  String?
+  verified    Boolean  @default(false)
+  monthlyListeners Int @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  albums   Album[]
+  tracks   Track[]
+  followers FollowedArtist[]
+
+  @@map("artists")
+}
+
+model Album {
+  id          String   @id @default(cuid())
+  title       String
+  coverImage  String?
+  releaseDate DateTime
+  artistId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  tracks Track[]
+
+  @@map("albums")
+}
+
+model Track {
+  id          String   @id @default(cuid())
+  title       String
+  duration    Int      // in seconds
+  streamUrl   String?
+  coverImage  String?
+  plays       Int      @default(0)
+  artistId    String
+  albumId     String?
+  genreId     String?
+  mood        String?
+  energy      Float?   @default(0.5)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  album    Album? @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  genre    Genre? @relation(fields: [genreId], references: [id], onDelete: SetNull)
+  
+  likedBy          LikedTrack[]
+  playlistTracks   PlaylistTrack[]
+  listeningHistory ListeningHistory[]
+
+  @@map("tracks")
+}
+
+model Genre {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String?
+  createdAt DateTime @default(now())
+
+  tracks Track[]
+
+  @@map("genres")
+}
+
+// ─────────────────────────────────────────────────────────────
+// PLAYLISTS
+// ─────────────────────────────────────────────────────────────
+model Playlist {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  coverImage  String?
+  isPublic    Boolean  @default(true)
+  isMoodGen   Boolean  @default(false)
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tracks PlaylistTrack[]
+  likedBy LikedPlaylist[]
+
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  id         String   @id @default(cuid())
+  playlistId String
+  trackId    String
+  position   Int
+  addedAt    DateTime @default(now())
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, trackId])
+  @@map("playlist_tracks")
+}
+
+// ─────────────────────────────────────────────────────────────
+// USER INTERACTIONS
+// ─────────────────────────────────────────────────────────────
+model LikedTrack {
+  id        String   @id @default(cuid())
+  userId    String
+  trackId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trackId])
+  @@map("liked_tracks")
+}
+
+model LikedPlaylist {
+  id         String   @id @default(cuid())
+  userId     String
+  playlistId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, playlistId])
+  @@map("liked_playlists")
+}
+
+model FollowedArtist {
+  id        String   @id @default(cuid())
+  userId    String
+  artistId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, artistId])
+  @@map("followed_artists")
+}
+
+model ListeningHistory {
+  id             String   @id @default(cuid())
+  userId         String
+  trackId        String
+  playedAt       DateTime @default(now())
+  listenDuration Int
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@map("listening_history")
+}
+
+// ─────────────────────────────────────────────────────────────
+// SOCIAL / FRIENDS
+// ─────────────────────────────────────────────────────────────
+model Friendship {
+  id        String   @id @default(cuid())
+  userId    String
+  friendId  String
+  createdAt DateTime @default(now())
+
+  user   User @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@map("friendships")
+}
+
+model FriendRequest {
+  id        String        @id @default(cuid())
+  fromId    String
+  toId      String
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  from User @relation("RequestSender", fields: [fromId], references: [id], onDelete: Cascade)
+  to   User @relation("RequestReceiver", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@map("friend_requests")
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react'
-import usePlayerStore from '@/store/usePlayerStore'
+import { usePlayerStore } from '@/stores'
 
 /**
  * Hook that wires an HTML5 <audio> element to the Zustand player store.
@@ -14,7 +14,7 @@ export default function useAudioPlayer() {
     isMuted,
     setProgress,
     setDuration,
-    playNext,
+    next,
   } = usePlayerStore()
 
   // Play / pause
@@ -41,7 +41,7 @@ export default function useAudioPlayer() {
     if (!el) return
     const onTime = () => setProgress(el.currentTime)
     const onMeta = () => setDuration(el.duration)
-    const onEnd = () => playNext()
+    const onEnd = () => next()
     el.addEventListener('timeupdate', onTime)
     el.addEventListener('loadedmetadata', onMeta)
     el.addEventListener('ended', onEnd)
@@ -50,7 +50,7 @@ export default function useAudioPlayer() {
       el.removeEventListener('loadedmetadata', onMeta)
       el.removeEventListener('ended', onEnd)
     }
-  }, [setProgress, setDuration, playNext])
+  }, [setProgress, setDuration, next])
 
   const seek = useCallback((time) => {
     const el = audioRef.current
