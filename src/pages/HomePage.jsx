@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { RiPlayFill, RiFireLine, RiTimeLine, RiArrowRightSLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { PlaylistCard, ArtistCard, TrackRow } from '../components';
 import { useUserStore } from '../stores/userStore';
 import { usePlayerStore } from '../stores/playerStore';
 
-// Mock data for demo
 const mockTracks = [
   { id: '1', title: 'Kesariya', duration: 268, plays: 180000000, artist: { id: '1', name: 'Arijit Singh' }, album: { id: '1', title: 'Brahmastra', coverImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300' } },
   { id: '2', title: 'Kala Chashma', duration: 198, plays: 200000000, artist: { id: '2', name: 'Neha Kakkar' }, album: { id: '2', title: 'Party Anthems', coverImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300' } },
@@ -30,9 +29,9 @@ const mockArtists = [
 ];
 
 function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
   return 'Good evening';
 }
 
@@ -42,143 +41,118 @@ export default function HomePage() {
   const [greeting] = useState(getGreeting());
 
   return (
-    <div className="space-y-10 pb-8">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between">
         <div>
           <motion.h1
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold"
+            className="text-2xl font-bold text-dhwani-text"
           >
             {greeting}{user ? `, ${user.name?.split(' ')[0]}` : ''}
           </motion.h1>
-          <p className="text-dhwani-text-secondary mt-1">
-            Discover your next favorite song
-          </p>
+          <p className="text-sm text-dhwani-text-secondary mt-1">Discover your next favorite song</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-dhwani-muted">
-            <RiTimeLine className="inline mr-1" />
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-          </span>
-        </div>
+        <span className="text-xs text-dhwani-muted flex items-center gap-1">
+          <RiTimeLine />
+          {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+        </span>
       </div>
 
-      {/* Quick Play Cards */}
+      {/* Quick Play Grid */}
       <section>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {mockPlaylists.slice(0, 6).map((playlist, index) => (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          {mockPlaylists.slice(0, 6).map((pl, i) => (
             <motion.div
-              key={playlist.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              className="group flex items-center gap-4 bg-dhwani-surface-light/50 hover:bg-dhwani-surface-light rounded-lg overflow-hidden cursor-pointer transition-colors"
+              key={pl.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              className="group flex items-center gap-3 bg-dhwani-surface-light hover:bg-dhwani-surface-elevated rounded-md overflow-hidden cursor-pointer transition-colors h-14"
             >
-              <div className="w-16 h-16 flex-shrink-0">
-                <img
-                  src={playlist.coverImage}
-                  alt={playlist.title}
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-14 h-14 flex-shrink-0">
+                <img src={pl.coverImage} alt={pl.title} className="w-full h-full object-cover" />
               </div>
-              <p className="font-semibold truncate flex-1 pr-2">{playlist.title}</p>
-              <button className="w-10 h-10 mr-3 rounded-full bg-dhwani-accent flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-lg shadow-dhwani-accent/30 transition-opacity">
-                <RiPlayFill className="text-white" />
+              <p className="font-bold text-xs truncate flex-1 pr-2 text-dhwani-text">{pl.title}</p>
+              <button className="w-8 h-8 mr-2 rounded-full bg-[#1db954] flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md transition-all hover:scale-105 hover:bg-[#1ed760]">
+                <RiPlayFill className="text-black text-sm" />
               </button>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Trending Now */}
+      {/* Trending */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-dhwani-accent3/20 to-dhwani-accent4/20 flex items-center justify-center">
-              <RiFireLine className="text-dhwani-accent3 text-lg" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Trending Now</h2>
-              <p className="text-sm text-dhwani-muted">Whats hot right now</p>
-            </div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <RiFireLine className="text-orange-400" />
+            <h2 className="text-lg font-bold text-dhwani-text">Trending Now</h2>
           </div>
-          <Link to="/search" className="text-sm text-dhwani-accent hover:underline flex items-center gap-1">
+          <Link to="/search" className="text-xs text-dhwani-text-secondary hover:text-dhwani-text font-semibold flex items-center gap-0.5">
             See all <RiArrowRightSLine />
           </Link>
         </div>
-        <div className="card p-4">
-          {mockTracks.map((track, index) => (
-            <TrackRow key={track.id} track={track} index={index} showPlays />
+        <div className="card p-2">
+          {mockTracks.map((track, i) => (
+            <TrackRow key={track.id} track={track} index={i} showPlays />
           ))}
         </div>
       </section>
 
-      {/* Featured Playlists */}
+      {/* Made For You */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Made For You</h2>
-          <Link to="/library" className="text-sm text-dhwani-accent hover:underline flex items-center gap-1">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dhwani-text">Made For You</h2>
+          <Link to="/library" className="text-xs text-dhwani-text-secondary hover:text-dhwani-text font-semibold flex items-center gap-0.5">
             See all <RiArrowRightSLine />
           </Link>
         </div>
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-          {mockPlaylists.map((playlist, index) => (
-            <PlaylistCard key={playlist.id} playlist={playlist} index={index} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {mockPlaylists.map((pl, i) => (
+            <PlaylistCard key={pl.id} playlist={pl} index={i} />
           ))}
         </div>
       </section>
 
       {/* Popular Artists */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Popular Artists</h2>
-          <Link to="/artists" className="text-sm text-dhwani-accent hover:underline flex items-center gap-1">
-            See all <RiArrowRightSLine />
-          </Link>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dhwani-text">Popular Artists</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {mockArtists.map((artist, index) => (
-            <ArtistCard key={artist.id} artist={artist} index={index} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {mockArtists.map((artist, i) => (
+            <ArtistCard key={artist.id} artist={artist} index={i} />
           ))}
         </div>
       </section>
 
       {/* Recently Played */}
       <section>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Recently Played</h2>
-          <Link to="/library" className="text-sm text-dhwani-accent hover:underline flex items-center gap-1">
-            History <RiArrowRightSLine />
-          </Link>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-dhwani-text">Recently Played</h2>
         </div>
-        <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-          {mockTracks.map((track, index) => (
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {mockTracks.map((track, i) => (
             <motion.div
               key={track.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              whileHover={{ y: -5 }}
+              transition={{ delay: i * 0.04 }}
               onClick={() => playTrack(track, mockTracks)}
-              className="cursor-pointer group w-40 flex-shrink-0"
+              className="cursor-pointer group flex-shrink-0 w-36"
             >
-              <div className="relative mb-3">
-                <div className="aspect-square rounded-xl overflow-hidden bg-dhwani-surface-light shadow-lg group-hover:shadow-xl transition-shadow">
-                  <img
-                    src={track.album?.coverImage}
-                    alt={track.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+              <div className="relative mb-2">
+                <div className="aspect-square rounded-md overflow-hidden bg-dhwani-surface-light shadow group-hover:shadow-lg transition-shadow">
+                  <img src={track.album?.coverImage} alt={track.title} className="w-full h-full object-cover" />
                 </div>
-                <button className="absolute bottom-2 right-2 w-10 h-10 bg-dhwani-accent rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-lg transition-opacity">
-                  <RiPlayFill className="text-white" />
+                <button className="absolute bottom-1.5 right-1.5 w-9 h-9 bg-[#1db954] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-lg transition-all hover:bg-[#1ed760] hover:scale-105">
+                  <RiPlayFill className="text-black text-sm" />
                 </button>
               </div>
-              <p className="font-medium truncate">{track.title}</p>
-              <p className="text-sm text-dhwani-muted truncate">{track.artist.name}</p>
+              <p className="font-semibold text-xs truncate text-dhwani-text">{track.title}</p>
+              <p className="text-[11px] text-dhwani-muted truncate">{track.artist.name}</p>
             </motion.div>
           ))}
         </div>

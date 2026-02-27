@@ -19,7 +19,15 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    // In development, allow all localhost origins
+    if (origin.startsWith('http://localhost:')) return callback(null, true);
+    // In production, check against CLIENT_URL
+    if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) return callback(null, true);
+    callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json());

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { RiUserLine, RiLockLine, RiNotification3Line, RiMusicLine, RiPaletteLine, RiLogoutBoxLine, RiArrowRightSLine, RiCheckLine, RiMoonLine, RiSunLine, RiSmartphoneLine, RiGlobalLine, RiShieldLine, RiQuestionLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../stores/userStore';
+import { useUIStore } from '../stores/uiStore';
 
 const settingsSections = [
   {
@@ -32,7 +33,7 @@ const settingsSections = [
     icon: RiPaletteLine,
     settings: [
       { id: 'theme', label: 'Theme', value: 'dark', type: 'theme' },
-      { id: 'accent', label: 'Accent Color', value: '#9b87f5', type: 'color' },
+      { id: 'accent', label: 'Accent Color', value: '#1db954', type: 'color' },
     ],
   },
   {
@@ -71,13 +72,14 @@ const accentColors = [
 export default function SettingsPage() {
   const navigate = useNavigate();
   const { user, logout } = useUserStore();
+  const { theme: currentTheme, setTheme } = useUIStore();
   const [settings, setSettings] = useState({
     quality: 'High',
     crossfade: '5s',
     normalize: true,
     gapless: true,
-    theme: 'dark',
-    accent: '#9b87f5',
+    theme: currentTheme || 'dark',
+    accent: '#1db954',
     push: true,
     email_notifs: false,
     new_music: true,
@@ -92,6 +94,9 @@ export default function SettingsPage() {
 
   const handleSelect = (id, value) => {
     setSettings(prev => ({ ...prev, [id]: value }));
+    if (id === 'theme' && (value === 'dark' || value === 'light')) {
+      setTheme(value);
+    }
   };
 
   const handleLogout = async () => {
@@ -174,7 +179,7 @@ export default function SettingsPage() {
 
                   {/* Upgrade */}
                   {setting.type === 'upgrade' && (
-                    <button className="flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-dhwani-accent to-dhwani-accent2 rounded-full text-sm font-medium text-white">
+                    <button className="flex items-center gap-2 px-4 py-1.5 bg-[#1db954] rounded-full text-sm font-medium text-black">
                       Upgrade
                       <RiArrowRightSLine />
                     </button>
